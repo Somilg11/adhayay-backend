@@ -1,16 +1,15 @@
-const User = require("../models/user-model");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { generateToken } = require("../utils/generateToken");
+import User from "../models/user.model.js";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { generateToken } from "../utils/generateToken.js";
+import { registerValidation, loginValidation } from "../validators/userValidator.js";
 
-// create
+// Register
+export const registerUser = async (req, res) => {
+  const { error } = registerValidation.validate(req.body);
+  if (error) return res.status(400).json({ message: error.details[0].message });
 
-module.exports.registerUser = async (req, res) => {
   const { name, email, password } = req.body;
-
-  if (!name || !email || !password) {
-    return res.status(400).json({ message: "Name, email, and password are required." });
-  }
 
   try {
     const existingUser = await User.findOne({ email });
@@ -34,15 +33,12 @@ module.exports.registerUser = async (req, res) => {
   }
 };
 
+// Login
+export const loginUser = async (req, res) => {
+  const { error } = loginValidation.validate(req.body);
+  if (error) return res.status(400).json({ message: error.details[0].message });
 
-// login
-
-module.exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required" });
-  }
 
   try {
     const user = await User.findOne({ email });
@@ -62,11 +58,8 @@ module.exports.loginUser = async (req, res) => {
   }
 };
 
-
-
-// logout route.............
-
-module.exports.logOut = function (req, res) {
+// Logout
+export const logOut = function (req, res) {
   const token = req.cookies.token;
 
   if (!token) {

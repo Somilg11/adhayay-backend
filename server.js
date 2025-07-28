@@ -1,19 +1,17 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
-
-const expressSession = require("express-session");
-const flash = require("connect-flash");
-
+import dotenv from "dotenv";
 dotenv.config();
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import authRoutes from "./routes/auth.routes.js";
+import expressSession from "express-session";
+import flash from "connect-flash";
 
-const authRoutes = require("./routes/authRoutes");
+import { connectDB } from "./db/db.connect.js";
+connectDB();
 
 const app = express();
 
-// Express session (for req.flash)
 app.use(
   expressSession({
     resave: false,
@@ -24,7 +22,7 @@ app.use(
 
 app.use(
   cors({
-    origin: "http://localhost:5173", 
+    origin: process.env.CLIENT_URL || "http://localhost:5173", 
     credentials: true,
   })
 );
@@ -32,11 +30,6 @@ app.use(
 app.use(flash());
 app.use(express.json());
 app.use(cookieParser());
-
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log(err));
 
 // Routes
 app.use("/api/auth", authRoutes);
